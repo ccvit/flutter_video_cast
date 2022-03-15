@@ -114,11 +114,22 @@ class ChromeCastController: NSObject, FlutterPlatformView {
         guard
             let args = args as? [String: Any],
             let url = args["url"] as? String,
+            let videoName = args["videoName"] as? String,
+            let description = args["description"] as? String,
+            let thumb = args["thumb"] as? String,
             let mediaUrl = URL(string: url) else {
                 print("Invalid URL")
                 return
         }
-        let mediaInformation = GCKMediaInformationBuilder(contentURL: mediaUrl).build()
+
+        let mediaInformationBuilder = GCKMediaInformationBuilder(contentURL: mediaUrl)
+        let metadata = GCKMediaMetadata()
+        metadata.setString(videoName, forKey: kGCKMetadataKeyTitle)
+        metadata.setString(description, forKey: kGCKMetadataKeySubtitle)
+        metadata.addImage(GCKImage(url: URL(string: thumb)!, width: 480, height: 360))
+        mediaInformationBuilder.metadata = metadata
+        let mediaInformation = mediaInformationBuilder.build()
+
         if let request = sessionManager.currentCastSession?.remoteMediaClient?.loadMedia(mediaInformation) {
             request.delegate = self
         }
